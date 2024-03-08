@@ -1398,7 +1398,6 @@ def validate_meta(
         return meta
         # Normalize path under bazel to make sure it isn't absolute
         path = normpath(path, manager.options)
-    manager.log(f"Metadata {id}: {path}")
 
     if not bazel:
         try:
@@ -1972,10 +1971,8 @@ class State:
         self.add_ancestors()
         self.per_line_checking_time_ns = collections.defaultdict(int)
         t0 = time.time()
-        self.manager.log(f"before validate {self.meta=}")
         self.meta = validate_meta(self.meta, self.id, self.path, self.ignore_all, manager)
         self.manager.add_stats(validate_meta_time=time.time() - t0)
-        self.manager.log(f"{self.path} {self.meta=}")
         if self.meta:
             # Make copies, since we may modify these and want to
             # compare them to the originals later.
