@@ -298,6 +298,7 @@ class FindModuleCache:
         If fast_path is True, prioritize performance over generating detailed
         error descriptions.
         """
+
         if id not in self.results:
             top_level = id.partition(".")[0]
             use_typeshed = True
@@ -416,6 +417,16 @@ class FindModuleCache:
         components = id.split(".")
         dir_chain = os.sep.join(components[:-1])  # e.g., 'foo/bar'
 
+        if self.options.bazel:
+            print(f"Looking for module {id}", flush=True)
+            filename = "/".join(components)
+            py_file = filename + ".py"
+            pyi_file = filename + ".pyi"
+            for file in [py_file, pyi_file]:
+                if file in self.options.cache_map:
+                    print(f"Found cache entry for {id}, module assumed to exist.")
+                    return file
+
         # We have two sets of folders so that we collect *all* stubs folders and
         # put them in the front of the search path
         third_party_inline_dirs: PackageDirs = []
@@ -501,13 +512,13 @@ class FindModuleCache:
                     return path_stubs
 
             # In namespace mode, register a potential namespace package
-            if self.options and self.options.namespace_packages:
-                if (
-                    not has_init
-                    and fscache.exists_case(base_path, dir_prefix)
-                    and not fscache.isfile_case(base_path, dir_prefix)
-                ):
-                    near_misses.append((base_path, dir_prefix))
+            # if self.options and self.options.namespace_packages:
+            #     if (
+            #         not has_init
+            #         and fscache.exists_case(base_path, dir_prefix)
+            #         and not fscache.isfile_case(base_path, dir_prefix)
+            #     ):
+            #         near_misses.append((base_path, dir_prefix))
 
             # No package, look for module.
             for extension in PYTHON_EXTENSIONS:
